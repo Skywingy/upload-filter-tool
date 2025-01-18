@@ -61,8 +61,6 @@ function App() {
       reader.readAsBinaryString(file);
     });
   };
-  
-
   return (
     <div className='body'>
       {!isFileProcessed && (
@@ -77,22 +75,6 @@ function App() {
             </div>
         </div>
       )}
-      
-      {/* Display the list of uploaded files */}
-      {/* {files.length > 0 && (
-        <div className="fileTitle">
-          <h2>Uploaded Files:</h2>
-          <ul>
-            {files.map((file, index) => (
-              <li key={index}>
-                {file.name} ({(file.size / 1024).toFixed(2)} KB)
-              </li>
-            ))}
-          </ul>
-        </div>
-      )} */}
-
-      {/* Only display the spreadsheet once the file has been processed */}
       {isFileProcessed && fileData.length > 0 && (
         <div className='spreadsheetH1'>
           <h2>Төлбөрийн баримт:</h2>
