@@ -20,6 +20,7 @@ function App() {
     if (dropZone == 1) {
       setFiles1(droppedFiles);
           // Use the utility to process files
+          //asd
     processFiles(droppedFiles, (data) => {
       setFileData1(data);
       setIsFile1Processed(true);
