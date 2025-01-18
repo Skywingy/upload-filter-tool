@@ -8,8 +8,25 @@
 
 html,
 body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
   height: 100%;
-  margin: 2rem;
+}
+.body {
+  display: flex;
+  flex-direction: row;
+}
+
+
+
+.dropZoneContainer {
+  flex: 1; /* Allow flexible resizing of zones */
+  min-width: 300px; /* Ensure a minimum width for smaller screens */
+  max-width: 600px; /* Set a maximum width to avoid overly wide zones */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 20px;
 }
 
 .logo {
@@ -23,7 +40,8 @@ body {
   color: #888;
 }
 
-.drag-drop-zone {
+.drag-drop-zone ,
+.dropZone {
   border: 2px dashed #ccc;
   border-radius: 8px;
   padding: 20px;
@@ -36,13 +54,7 @@ body {
   background-color: #f9f9f9;
 }
 
-.dropZone {
-  border: 2px dashed #ccc;
-  border-radius: 8px;
-  padding: 20px;
-  text-align: center;
-  margin-top: 20px;
-}
+
 
 .fileTitle {
   margin-top: 20px;
@@ -50,11 +62,6 @@ body {
 
 ul {
   list-style-type: none;
-}
-.body {
-  display: flex;
-  width: 100%;
-  height: 100%;
 }
 
 .spreadsheetH1 {
@@ -68,3 +75,5 @@ ul {
   height: 100%; /* Force HotTable to take full height */
   width: 100%; /* Force HotTable to take full width */
 }
+
+

@@ -4,22 +4,32 @@ import * as XLSX from 'xlsx'; // Import the xlsx library
 import Spreadsheet from './Spreadsheet'; // Import the Spreadsheet component
 
 function App() {
-  const [files, setFiles] = useState<File[]>([]);
-  const [fileData, setFileData] = useState<any[]>([]); // To store parsed data from files
-  const [isFileProcessed, setIsFileProcessed] = useState<boolean>(false); // Track file processing status
-
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+  const [files1, setFiles1] = useState<File[]>([]);
+  const [files2, setFiles2] = useState<File[]>([]);
+  const [fileData1, setFileData1] = useState<any[]>([]); // To store parsed data from files
+  const [fileData2, setFileData2] = useState<any[]>([]);
+  const [isFile1Processed, setIsFile1Processed] = useState<boolean>(false); // Track file processing status
+  const [isFile2Processed, setIsFile2Processed] = useState<boolean>(false);
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>, dropZone: number) => {
     event.preventDefault();
     const droppedFiles = Array.from(event.dataTransfer.files);
-    setFiles(droppedFiles);
-    readFiles(droppedFiles); // Read and process the files
+
+
+    if (dropZone == 1) {
+      setFiles1(droppedFiles);
+      readFiles(droppedFiles, setFileData1, setIsFile1Processed);
+    }
+    else if (dropZone == 2) {
+      setFiles2(droppedFiles);
+      readFiles(droppedFiles, setFileData2, setIsFile2Processed);
+    }
   };
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault(); // Required to allow the drop event
   };
 
-  const readFiles = (files: File[]) => {
+  const readFiles = (files: File[], setFileData: React.Dispatch<React.SetStateAction<any[]>>, setIsProcessed: React.Dispatch<React.SetStateAction<boolean>>) => {
     files.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -30,7 +40,7 @@ function App() {
           const sheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(sheet); // Convert sheet data to JSON
           setFileData(jsonData); // Set the parsed data
-          setIsFileProcessed(true); // Indicate that the file has been processed
+          setIsProcessed(true); // Indicate that the file has been processed
         }
       };
       reader.readAsBinaryString(file);
@@ -38,41 +48,53 @@ function App() {
   };
 
   return (
-    <div className='body'>
-      {!isFileProcessed && (
-        <div>
-          <h1>Drag and Drop File Upload</h1>
-            <div
-              className="dropZone"
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-            >
-              <p>Файл аа хийнэ үү</p>
+    <div className="body">
+      <div className="grid">
+        {/* First Drop Zone */}
+        <div className="dropZoneContainer">
+          {!isFile1Processed && (
+            <div>
+              <h1>FILE1</h1>
+              <div
+                className="dropZone"
+                onDrop={(e) => handleDrop(e, 1)}
+                onDragOver={handleDragOver}
+              >
+                <p>Файл аа хийнэ үү</p>
+              </div>
             </div>
+          )}
+          {isFile1Processed && fileData1.length > 0 && (
+            <div className="spreadsheetH1">
+              <h2>file1:</h2>
+              <Spreadsheet data={fileData1} />
+            </div>
+          )}
         </div>
-      )}
-      
-      {/* Display the list of uploaded files */}
-      {/* {files.length > 0 && (
-        <div className="fileTitle">
-          <h2>Uploaded Files:</h2>
-          <ul>
-            {files.map((file, index) => (
-              <li key={index}>
-                {file.name} ({(file.size / 1024).toFixed(2)} KB)
-              </li>
-            ))}
-          </ul>
+      </div>
+      <div className="grid">
+        {/* Second Drop Zone */}
+        <div className="dropZoneContainer">
+          {!isFile2Processed && (
+            <div>
+              <h1>FILE2</h1>
+              <div
+                className="dropZone"
+                onDrop={(e) => handleDrop(e, 2)}
+                onDragOver={handleDragOver}
+              >
+                <p>Файл аа хийнэ үү</p>
+              </div>
+            </div>
+          )}
+          {isFile2Processed && fileData2.length > 0 && (
+            <div className="spreadsheetH1">
+              <h2>file2:</h2>
+              <Spreadsheet data={fileData2} />
+            </div>
+          )}
         </div>
-      )} */}
-
-      {/* Only display the spreadsheet once the file has been processed */}
-      {isFileProcessed && fileData.length > 0 && (
-        <div className='spreadsheetH1'>
-          <h2>Төлбөрийн баримт:</h2>
-          <Spreadsheet data={fileData} />
-        </div>
-      )}
+      </div>
     </div>
   );
 }
