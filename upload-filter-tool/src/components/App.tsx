@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './App.css';
 import * as XLSX from 'xlsx'; // Import the xlsx library
 import Spreadsheet from './Spreadsheet'; // Import the Spreadsheet component
+import Grid from './Grid';
 
 function App() {
   const [files, setFiles] = useState<File[]>([]);
@@ -9,6 +10,7 @@ function App() {
   const [isFileProcessed, setIsFileProcessed] = useState<boolean>(false); // Track file processing status
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    console.log('h')
     event.preventDefault();
     const droppedFiles = Array.from(event.dataTransfer.files);
     setFiles(droppedFiles);
@@ -24,18 +26,42 @@ function App() {
       const reader = new FileReader();
       reader.onload = (e) => {
         const data = e.target?.result;
-        if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || file.name.endsWith('.xlsx')) {
+        if (
+          file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+          file.name.endsWith('.xlsx')
+        ) {
           const workbook = XLSX.read(data, { type: 'binary' });
-          const sheetName = workbook.SheetNames[0]; // Read the first sheet
+          const sheetName = workbook.SheetNames[0]; // Get the first sheet name
           const sheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(sheet); // Convert sheet data to JSON
-          setFileData(jsonData); // Set the parsed data
-          setIsFileProcessed(true); // Indicate that the file has been processed
+  
+          // Read data including blank columns
+          const jsonData = XLSX.utils.sheet_to_json(sheet, {
+            header: 1, // Read as a 2D array to get all rows/columns
+            defval: '', // Assign a default value to blank cells
+          });
+  
+          // Convert the 2D array to an object structure (optional)
+          const headers = jsonData[0]; // Assume first row is the header
+          const rows = jsonData.slice(1); // Data starts from the second row
+  
+          const formattedData = rows.map((row) =>
+            headers.reduce(
+              (acc, header, index) => ({
+                ...acc,
+                [header]: row[index] || '', // Map headers to row values
+              }),
+              {}
+            )
+          );
+  
+          setFileData(formattedData); // Set the parsed data
+          setIsFileProcessed(true);
         }
       };
       reader.readAsBinaryString(file);
     });
   };
+  
 
   return (
     <div className='body'>
@@ -70,7 +96,7 @@ function App() {
       {isFileProcessed && fileData.length > 0 && (
         <div className='spreadsheetH1'>
           <h2>Төлбөрийн баримт:</h2>
-          <Spreadsheet data={fileData} />
+          <Grid data={fileData} />
         </div>
       )}
     </div>
