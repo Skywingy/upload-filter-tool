@@ -52,7 +52,7 @@ export const processFiles = (
 
         onFileProcessed(formattedData);
       } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-        console.log('pdf')
+        console.log('pdf working')
         // Process PDF files
         const pdfData = await readPdf(file);
         onFileProcessed(pdfData);

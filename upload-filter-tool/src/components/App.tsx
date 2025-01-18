@@ -39,7 +39,7 @@ function App() {
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault(); // Required to allow the drop event
   };
-
+  
   return (
     <div className="body">
       <div className="grid">
