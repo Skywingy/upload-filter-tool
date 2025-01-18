@@ -2,6 +2,8 @@ import { useState } from 'react';
 import './App.css';
 import * as XLSX from 'xlsx'; // Import the xlsx library
 import Spreadsheet from './Spreadsheet'; // Import the Spreadsheet component
+import Grid from './Grid';
+import { processFiles } from '../utility/fileprocessor'; 
 
 function App() {
   const [files1, setFiles1] = useState<File[]>([]);
@@ -23,8 +25,13 @@ function App() {
       setFiles2(droppedFiles);
       readFiles(droppedFiles, setFileData2, setIsFile2Processed);
     }
-  };
 
+    // Use the utility to process files
+    processFiles(droppedFiles, (data) => {
+      setFileData(data);
+      setIsFileProcessed(true);
+    });
+  };
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault(); // Required to allow the drop event
   };
