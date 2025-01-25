@@ -132,21 +132,45 @@ const parsePdfContent = async (pdfContent: string[]) => {
   });
 
   // Extract Transactions
-  const transactionRegex =
-    /(\d{1,2}\/\d{1,2}\/\d{4}) (\d{1,2}:\d{2}:\d{2} (AM|PM))\s+(.*?)\s+([\d,.]+)\s+([\d,.]+)\s+([\d,.]+)\s+([\d,.]+)/;
 
+  const reassembledContent: string[] = [];
+  let currentLine = "";
+  //const transactionRegex = /(\d{1,2}\/\d{1,2}\/\d{4})\s+(\d{1,2}:\d{2}:\d{2} (AM|PM))\s+(.*?)([\d,.]*)\s+([\d,.]*)\s+([\d,.]*)?\s+([\d,.]*)?/;
+  const transactionRegex = /(\d{1,2}\/\d{1,2}\/\d{4})\s+(\d{1,2}:\d{1,2}:\d{1,2}\s+(AM|PM))\s+(.*?)\s+([\d,.]+)\s+([\d,.]+)\s+([\d,.]+)\s+([\d,.]+)/;
+  
   pdfContent.forEach((line) => {
+    console.log(line)
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(line)) {
+      console.log('yes')
+      if (currentLine) {
+        reassembledContent.push(currentLine.trim()); // Push the completed transaction line.
+      }
+      currentLine = line; // Start a new transaction.
+    } else {
+      currentLine += " " + line;
+    }
+
+  });
+
+  if (currentLine) {
+    reassembledContent.push(currentLine.trim());
+  }
+  reassembledContent.forEach((line) => {
+    console.log("Reassembled Line:", line);
     const match = line.match(transactionRegex);
+    
     if (match) {
+      console.log('matching..')
       transactions.push({
         Date: match[1],
         Time: match[2],
-        Description: match[4],
-        Income: match[5],
-        Expense: match[6],
-        ExchangeRate: match[7],
-        Balance: match[8],
+        Description: match[4].trim(),
+        Income: match[5] || "0",
+        Expense: match[6] || "0",
+        ExchangeRate: match[7] || "",
+        Balance: match[8] || "0",
       });
+    } else {
     }
   });
 
