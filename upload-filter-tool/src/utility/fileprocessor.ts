@@ -75,152 +75,130 @@ export const processFiles = (
 };
 
 // Helper function to read and process PDFs
-const parsePdfContent = async (pdfContent: string[]) => {
+const parsePdfContent = async (lines: { y: number; x: number; text: string }[]) => {
   const accountInfo: any = {};
   const transactions: any[] = [];
 
-  // Extract Account Information
-  pdfContent.forEach((line) => {
-    //1st line
-    if (/Дансн\s*эзэмшигчийн\s*нэр/.test(line)) {
-      const match = line.match(/Дансн\s*эзэмшигчийн\s*нэр\s*:\s*(.+?)\s*Данс\s*нээсэн\s*огноо\s*:\s*(\d{4}\/\d{2}\/\d{2})/);
-      if (match) {
-        accountInfo.AccountHolder = match[1]?.trim();
-        accountInfo.CreatedDate = match[2]?.trim();
-      }
+  console.log('----------', lines)
+  lines.forEach(({ y, x, text }) => {
+    // Header section or account details
+    if (y > 428 && y < 525) {
+      //console.log('Header Section:', text);
     }
-    //2nd line
-    if (/Дансны\s*дугаар/.test(line)) {
-      const match = line.match(/Дансны\s*дугаар\s*:\s*(\d+).*Дуусах\s*хугацаа\s*:\s*(\S+)/);
-      if (match) {
-        accountInfo.AccountNumber = match[1]?.trim(); 
-        accountInfo.ExpireDate = match[2]?.trim();
-      }
+    // Transaction rows 1. Date
+    else if (x > 37.1 && x < 39.15) {
+      //console.log('Dates:', text)  
     }
-    //3rd line
-    if (/Регистрийн\s*дугаар/.test(line)) {
-      const match = line.match(/Регистрийн\s*дугаар\s*:\s*(\d+).*Валют\s*:\s*(\S+)/);
-      if (match) {
-        accountInfo.Id = match[1]?.trim(); 
-        accountInfo.Currency = match[2]?.trim();
-      }
+    //2. Teller
+    else if(x > 103.5 && x < 118){
+      //console.log('Teller', text)
     }
-    //4th line
-    if (/Дансны\s*төрөл/.test(line)) {  
-      const match = line.match(/Дансны\s*төрөл\s*:\s*(.+?)\s*Хүү\s*:\s*(.+)/);
-      if (match) {
-        accountInfo.AccountType = match[1]?.trim(); // Extract account type
-        accountInfo.InterestRate = match[2]?.trim(); // Extract interest rate
-      }
+    //3. Branch
+    else if(x > 164 && x < 176){
+    console.log('branch', text)
     }
-    //5th line
-    if (/Хугацаа\s*:\s*(\d{4}\/\d{2}\/\d{2})\s*-\s*(\d{4}\/\d{2}\/\d{2})\s*Нийт\s*орлого\s*:\s*([\d,\.]+)/.test(line)) {
-      const match = line.match(/Хугацаа\s*:\s*(\d{4}\/\d{2}\/\d{2})\s*-\s*(\d{4}\/\d{2}\/\d{2})\s*Нийт\s*орлого\s*:\s*([\d,\.]+)/);
-      if (match) {
-        accountInfo.StartDate = match[1]?.trim(); // Extract start date
-        accountInfo.EndDate = match[2]?.trim();   // Extract end date
-        accountInfo.TotalIncome = match[3]?.trim(); // Extract total income
-      }
+    //4. Transaction number
+    else if(x == 255.42){
+      //console.log('Tran number', text)
     }
-    //6th line
-    if (/Нийт\s*зарлага\s*:\s*([\d,\.]+)/.test(line)) {
-      const match = line.match(/Нийт\s*зарлага\s*:\s*([\d,\.]+)/);
-      if (match) {
-        accountInfo.TotalExpenditure = match[1]?.trim(); // Extract total expenditure
-      }
+    //5. Transaction description
+    else if(x > 337  && x < 390){
+      //console.log('tran desc', text)
+    }
+    //6. Income
+    else if(x == 461.664 || x == 450.961){
+      //console.log(text)
+    }
+    //7. Expense
+    else if(x == 498.878 || x == 505.689 || x == 501.797){
+      console.log('expense', text)
+    }
+    //8. Rate
+    else if(x == 552.279){
+      console.log(text)
+    }
+    //9. Balance
+    else if(x > 582 && x < 583.4){
+      console.log('Balance', text)
+    }
+    //10. Transacted bank
+    else if(x > 638 && x < 644){
+      console.log('tran bank', text)
+    }
+    //11. Transacted account type
+    else if(x == 713.7 || x == 706.686 || x == 700.848){
+      console.log('type', text)
+    }
+    //12. Transacted account name
+    else if(x == 794.05 || x == 770 || x == 839){
+      console.log('Tran name', text)
+    }
+    //13. Journal number
+    else if(x == 858.034){
+      console.log('Journal number', text)
     }
   });
-
-  // Extract Transactions
-
-  const reassembledContent: string[] = [];
-  let currentLine = "";
-  //const transactionRegex = /(\d{1,2}\/\d{1,2}\/\d{4})\s+(\d{1,2}:\d{2}:\d{2} (AM|PM))\s+(.*?)([\d,.]*)\s+([\d,.]*)\s+([\d,.]*)?\s+([\d,.]*)?/;
-  const transactionRegex = /(\d{1,2}\/\d{1,2}\/\d{4})\s+(\d{1,2}:\d{1,2}:\d{1,2}\s+(AM|PM))\s+(.*?)\s+([\d,.]+)\s+([\d,.]+)\s+([\d,.]+)\s+([\d,.]+)/;
   
-  pdfContent.forEach((line) => {
-    console.log(line)
-    if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(line)) {
-      console.log('yes')
-      if (currentLine) {
-        reassembledContent.push(currentLine.trim()); // Push the completed transaction line.
-      }
-      currentLine = line; // Start a new transaction.
-    } else {
-      currentLine += " " + line;
-    }
-
-  });
-
-  if (currentLine) {
-    reassembledContent.push(currentLine.trim());
-  }
-  reassembledContent.forEach((line) => {
-    console.log("Reassembled Line:", line);
-    const match = line.match(transactionRegex);
-    
-    if (match) {
-      console.log('matching..')
-      transactions.push({
-        Date: match[1],
-        Time: match[2],
-        Description: match[4].trim(),
-        Income: match[5] || "0",
-        Expense: match[6] || "0",
-        ExchangeRate: match[7] || "",
-        Balance: match[8] || "0",
-      });
-    } else {
-    }
-  });
-
-  return {
-    AccountInfo: accountInfo,
-    Transactions: transactions,
-  };
+  console.log('eeee', accountInfo)
+  return { AccountInfo: accountInfo, Transactions: transactions };
 };
+
+
 
 
 const readPdf = async (file: File) => {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  const textLines: string[] = []; // This will hold grouped lines
+  const lines: { y: number; x: number; text: string }[] = []; // This will hold grouped lines with x and y coordinates
 
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
     const textContent = await page.getTextContent();
 
-    // Group words into lines and append to textLines
-    const lines = groupWordsIntoLines(textContent.items);
-    textLines.push(...lines);
+    // Group words into lines and append to lines array
+    const groupedLines = groupWordsIntoLines(textContent.items);
+    lines.push(...groupedLines);
   }
 
-  return parsePdfContent(textLines); // Pass lines to parsePdfContent
+  return parsePdfContent(lines); // Pass lines with x and y to parsePdfContent
 };
 
 
+
+
 const groupWordsIntoLines = (items: any[]) => {
-  const lines: string[] = [];
-  let currentLine: string[] = [];
+  const lines: { y: number; x: number; text: string }[] = [];
+  let currentLine: { x: number; text: string[] }[] = [];
   let currentY = items[0].transform[5]; // Initial y-coordinate
 
   items.forEach((item) => {
     const word = item.str.trim();
+    const x = item.transform[4]; // X-coordinate of the word
     const y = item.transform[5]; // Y-coordinate of the word
 
-    // If the current word is on the same line (similar y-coordinate)
     if (Math.abs(y - currentY) < 5) {
-      currentLine.push(word); // Add word to the current line
+      // Same row, check for column alignment
+      const column = currentLine.find((line) => Math.abs(line.x - x) < 5);
+      if (column) {
+        column.text.push(word); // Add to the same column
+      } else {
+        currentLine.push({ x, text: [word] }); // Create a new column
+      }
     } else {
-      lines.push(currentLine.join(' ')); // Push the completed line
-      currentLine = [word]; // Start a new line
+      // New row
+      currentLine.forEach((line) =>
+        lines.push({ y: currentY, x: line.x, text: line.text.join(" ") })
+      );
+      currentLine = [{ x, text: [word] }]; // Start a new row
       currentY = y; // Update the y-coordinate
     }
   });
 
-  // Push the last line
+  // Push the last row
   if (currentLine.length > 0) {
-    lines.push(currentLine.join(' '));
+    currentLine.forEach((line) =>
+      lines.push({ y: currentY, x: line.x, text: line.text.join(" ") })
+    );
   }
 
   return lines;
